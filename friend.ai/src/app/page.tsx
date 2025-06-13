@@ -46,35 +46,40 @@ export default function Home() {
       const responseText = response.data?.kwargs?.content;
       textAreaRef.current?.focus();
 
-      // Split the response text into an array of individual characters
-      const responseArray = responseText.split("");
+      // Create a variable to build the response
+      // Split the response into words
+      const responseWords = responseText.split(" ");
 
       // Create a variable to build the response
       let responseBuilder = "";
 
       // Create an interval to simulate the AI typing out the response
       const intervalId = setInterval(() => {
-        // Get the next character in the response
-        const nextChar = responseArray.shift();
+        // Get the next word in the response
+        const nextWord = responseWords.shift();
 
-        // If the next character is not undefined, add it to the response builder
-        if (nextChar !== undefined) {
-          responseBuilder += nextChar;
+        // If the next word is not undefined, update the chat log
+        if (nextWord !== undefined) {
+          responseBuilder += nextWord + " ";
+
           setChatLog((prevLog) => {
             const newLog = [...prevLog];
-            newLog[newLog.length - 1].response = responseBuilder;
+            if (newLog.length > 0) {
+              newLog[newLog.length - 1].response = responseBuilder;
+            } else {
+              newLog.push({ message: "", response: responseBuilder, timestamp: timestamp });
+            }
             return newLog;
           });
         }
 
-        // If there are no more characters in the response, clear the interval and reset the sending state
-        if (responseArray.length === 0) {
+        // If there are no more words in the response, clear the interval and reset the sending state
+        if (responseWords.length === 0) {
           clearInterval(intervalId);
           setIsSending(false);
-          setMessage("");
           textAreaRef.current?.focus();
         }
-      }, 20); // 20ms delay between each character
+      }, 5);
     } catch (error) {
       // Log any errors that occur while sending the message
       console.error("Error sending message:", error);
@@ -101,6 +106,11 @@ export default function Home() {
           <span className="block text-gray-600" dangerouslySetInnerHTML={{ __html: html }}></span>
         </div>
         <span className="text-gray-400 text-sm">{entry.timestamp}</span>
+        {isSending && (
+          <div className="text-gray-400 text-sm">
+            <span className="animate-pulse">thinking...</span>
+          </div>
+        )}
       </div>
     });
   };
