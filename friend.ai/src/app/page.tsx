@@ -1,110 +1,136 @@
-"use client"
-import Image from "next/image";
-import { useState } from "react";
+"use client";
+
+import { useState, useRef } from "react";
+import axios from "axios";
+
+interface ChatLogEntry {
+  message: string;
+  response: string;
+  timestamp: string;
+}
 
 export default function Home() {
-  const [chat, setChat] = useState("");
+  const [chatLog, setChatLog] = useState<ChatLogEntry[]>([]);
+  const [message, setMessage] = useState<string>("");
+  const [isSending, setIsSending] = useState(false);
+  const textAreaRef = useRef<HTMLTextAreaElement>(null);
+
+  console.log("CHAT LOG!");
+  console.log(chatLog);
+
+  // Handle sending a message to the chat API
+  const handleSendMessage = async () => {
+    // Prevent sending messages if the user is already sending a message or if the message is empty
+    if (isSending || message.trim() === "") return;
+
+    // Set the sending state to true to prevent multiple messages from being sent at once
+    setIsSending(true);
+
+    // Get the current timestamp for the message
+    const timestamp = new Date().toLocaleTimeString();
+
+    // Add the user's message to the chat log with an empty response
+    setChatLog((prevLog) => [...prevLog, { message, timestamp, response: "" }]);
+
+    setMessage("");
+
+    try {
+      // Send the message to the chat API
+      const response = await axios.post("http://localhost:3001/chat", { message });
+
+      // Log the response from the API
+      console.log("RESPONSE");
+      console.log(response.data);
+
+      // Get the response text from the API
+      const responseText = response.data?.kwargs?.content;
+      textAreaRef.current?.focus();
+
+      // Split the response text into an array of individual characters
+      const responseArray = responseText.split("");
+
+      // Create a variable to build the response
+      let responseBuilder = "";
+
+      // Create an interval to simulate the AI typing out the response
+      const intervalId = setInterval(() => {
+        // Get the next character in the response
+        const nextChar = responseArray.shift();
+
+        // If the next character is not undefined, add it to the response builder
+        if (nextChar !== undefined) {
+          responseBuilder += nextChar;
+          setChatLog((prevLog) => {
+            const newLog = [...prevLog];
+            newLog[newLog.length - 1].response = responseBuilder;
+            return newLog;
+          });
+        }
+
+        // If there are no more characters in the response, clear the interval and reset the sending state
+        if (responseArray.length === 0) {
+          clearInterval(intervalId);
+          setIsSending(false);
+          setMessage("");
+          textAreaRef.current?.focus();
+        }
+      }, 20); // 20ms delay between each character
+    } catch (error) {
+      // Log any errors that occur while sending the message
+      console.error("Error sending message:", error);
+    }
+  };
+
+  const renderMarkdownToHTML = (value: string) => {
+    return value.replace(/^(#+) (.*)$/gm, (match, p1, p2) => `<h${p1.length}>${p2}</h${p1.length}>`)
+              .replace(/^(.*)$/gm, (match) => `<p>${match}</p>`)
+              .replace(/!\[(.*?)\]\((.*?)\)/g, (match, p1, p2) => `<img src="${p2}" alt="${p1}">`)
+              .replace(/\[(.*?)\]\((.*?)\)/g, (match, p1, p2) => `<a href="${p2}">${p1}</a>`)
+              .replace(/_(.*?)_/g, (match, p1) => `<em>${p1}</em>`)
+              .replace(/\*(.*?)\*/g, (match, p1) => `<strong>${p1}</strong>`);
+  }
+
+  // Helper function to render the chat log
+  const renderChatLog = (chatLog: ChatLogEntry[]) => {
+    return chatLog.map((entry, index) => {
+      const html = renderMarkdownToHTML(entry.response);
+
+      return <div key={index} className="flex justify-between items-start mb-4">
+        <div>
+          <span className="block text-blue-500">You: {entry.message}</span>
+          <span className="block text-gray-600" dangerouslySetInnerHTML={{ __html: html }}></span>
+        </div>
+        <span className="text-gray-400 text-sm">{entry.timestamp}</span>
+      </div>
+    });
+  };
 
   return (
     <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <p>{chat}</p>
-        <textarea onChange={(e) => setChat(e.target.value)}></textarea>
-        <button>Send</button>
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start w-full">
+        <div className="chat-log w-full">{renderChatLog(chatLog)}</div>
+        <textarea
+          ref={textAreaRef}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey && !isSending) {
+              handleSendMessage();
+            }
+          }}
+          placeholder="Type your message here..."
+          autoFocus
+          disabled={isSending}
+          className="w-full h-24 p-4 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
+        <button
+          onClick={handleSendMessage}
+          disabled={isSending || message.trim() === ""}
+          className="bg-black text-white py-2 px-4 rounded-lg text-right"
+        >
+          Send
+        </button>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
     </div>
   );
 }
