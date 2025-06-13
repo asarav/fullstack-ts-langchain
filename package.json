@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "concurrently": "^9.1.2",
+    "create-next-app": "^15.3.3"
+  },
+  "scripts": {
+    "start": "concurrently \"cd server && npm run dev\" \"cd friend.ai && npm run dev\""
+  }
+}
