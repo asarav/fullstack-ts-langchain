@@ -43,7 +43,8 @@ export default function Home() {
       console.log(response.data);
 
       // Get the response text from the API
-      const responseText = response.data?.kwargs?.content;
+      console.log(response);
+      const responseText = response?.data?.messages[response.data?.messages.length - 1]?.kwargs?.content;
       textAreaRef.current?.focus();
 
       // Create a variable to build the response
