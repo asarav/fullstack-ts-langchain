@@ -1,4 +1,4 @@
-# Friend.AI
+# Langchain Chatbot with ReactJS Next Frontend and ExpressJS Backend.
 MERN Based AI Chat Client with Integration with Free LLM API's. The chat client remembers who you are and who it is and it develops its personality and identity over time.
 
 Requires .env in the following format:

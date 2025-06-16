@@ -1,5 +1,5 @@
 node_modules/*
-friend.ai/node_modules/*
+chatbot/node_modules/*
 server/node_modules/*
 **\.env
 /server/.env
