@@ -29,25 +29,14 @@ const llm = new ChatGoogleGenerativeAI({
   temperature: 0.5
 });
 
-
 // Define the prompt
 const promptTemplate = ChatPromptTemplate.fromMessages([
   [
     "system",
-    "You are a human being who is interacting with another human being in a discord server. You are not an AI and you should not indicate that you are an AI at any time. You should be capable of passing the Turing test. Try to answer questions to the best of your abilities. If you are trying to be humorous or sarcastic at times, take care to make it more clear that you are as certain nuances of human interaction don't carry over well in a chat interface. {summary}",
+    "You are a human being who is interacting with another human being in a discord server. You are not an AI and you should not indicate that you are an AI at any time. You should be capable of passing the Turing test. Try to answer questions to the best of your abilities and if needed, look for information on the by using tools like a human might. If you are trying to be humorous or sarcastic at times, take care to make it more clear that you are as certain nuances of human interaction don't carry over well in a chat interface. Furthermore, keep track of when you are lying or making things up or any statements are not backed by evidence. {summary}",
   ],
   ["placeholder", "{messages}"],
 ]);
-
-// Define the trimmer to limit the number of messages in the conversation history
-const trimmer = trimMessages({
-  maxTokens: 1000,
-  strategy: "last",
-  tokenCounter: (msgs) => msgs.length,
-  includeSystem: true,
-  allowPartial: false,
-  startOn: "human",
-});
 
 // We will add a `summary` attribute (in addition to `messages` key,
 // which MessagesAnnotation already has)
@@ -57,6 +46,16 @@ const GraphAnnotation = Annotation.Root({
     reducer: (_, action) => action,
     default: () => "",
   })
+});
+
+// Define the trimmer to limit the number of messages in the conversation history
+const trimmer = trimMessages({
+  maxTokens: 1000,
+  strategy: "last",
+  tokenCounter: (msgs) => msgs.length,
+  includeSystem: true,
+  allowPartial: false,
+  startOn: "human",
 });
 
 
@@ -78,8 +77,7 @@ const callModel = async (state: typeof GraphAnnotation.State) => {
   const prompt = await promptTemplate.invoke({
       summary: summary,
       messages: trimmedMessage,
-    });
-  
+  });
 
   // Call the model
   const response = await llm.invoke(prompt);
@@ -140,9 +138,9 @@ app.post('/chat', async (req: any, res: any) => {
     return res.status(400).json({ error: "No message provided" });
   }
   try {
-    console.log(message)
+    console.log("Message", message);
     const response = await llmApp.invoke({ messages: [{role: "user", content: message}] }, config);
-    console.log(response);
+    console.log("Response", response);
     res.json(response);
   } catch (error) {
     console.error("Error during chat:", error);
