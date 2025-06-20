@@ -7,6 +7,9 @@
 
 import { createServer, config } from './serverConfig';
 import { llmApp } from './chain/workflow';
+import { getChatHistory, saveChatHistory } from './db/chatHistory.service';
+import connectDB from './db/db';
+
 
 /**
  * Create the Express server.
@@ -15,6 +18,12 @@ import { llmApp } from './chain/workflow';
  * with the necessary middleware and routes.
  */
 const app = createServer();
+
+//Global variables to store chat history and retrieve it
+let chatHistory: any[] = []
+let chatHistoryUsed = false
+
+connectDB();
 
 /**
  * Handle incoming chat requests.
@@ -30,6 +39,7 @@ app.post('/chat', async (req: any, res: any) => {
   // Check if the message is empty
   if (!message) {
     // Return a 400 error if the message is empty
+    console.log("No message provided");
     return res.status(400).json({ error: "No message provided" });
   }
 
@@ -38,10 +48,30 @@ app.post('/chat', async (req: any, res: any) => {
     console.log("Message", message);
 
     // Invoke the workflow with the message
-    const response = await llmApp.invoke({ messages: [{role: "user", content: message}] }, config);
+    let response;
+    if(!chatHistoryUsed){
+      const existingChatHistory = await getChatHistory(req.body.conversationId);
+      if (existingChatHistory) {
+        const messages = existingChatHistory.messages.map((message) => {
+          if (message.role === "user") {
+            return { role: "user", content: message.content };
+          } else {
+            return { role: "assistant", content: message.content };
+          }
+        });
+        chatHistory = messages;
+      }
+      chatHistoryUsed = true
+      response = await llmApp.invoke({ messages: [...chatHistory, {role: "user", content: message}] }, config);
+    } else {
+      response = await llmApp.invoke({ messages: [{role: "user", content: message}] }, config);
+    }
 
     // Log the response from the workflow
     console.log("Response", response);
+
+    // Save the chat history to MongoDB
+    await saveChatHistory(req.body.conversationId, response.messages);
 
     // Return the response to the client
     res.json(response);
@@ -50,6 +80,25 @@ app.post('/chat', async (req: any, res: any) => {
     console.error("Error during chat:", error);
 
     // Return a 500 error to the client
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get('/chat/history', async (req: any, res: any) => {
+  try {
+    // Get the conversation ID from the request query
+    console.log("LOADING CHAT HISTORY", req?.query?.conversationId);
+    const conversationId = req.query.conversationId;
+    if (!conversationId) {
+      console.log("Conversation ID is required");
+      return res.status(400).json({ error: "Conversation ID is required" });
+    }
+
+    const chatHistory = await getChatHistory(conversationId);
+    
+    res.json(chatHistory?.messages);
+  } catch (error) {
+    console.error("Error loading chat history:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 });

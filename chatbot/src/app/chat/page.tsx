@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
 interface ChatLogEntry {
@@ -14,9 +14,49 @@ export default function Home() {
   const [message, setMessage] = useState<string>("");
   const [isSending, setIsSending] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
+  const conversationId = 'some-conversation-id'; // Replace with the actual conversation ID
 
   console.log("CHAT LOG!");
   console.log(chatLog);
+
+  useEffect(() => {
+    console.log("LOADING CHAT HISTORY");
+    loadChatHistory();
+  }, [conversationId]);
+
+  console.log(process.env)
+
+  const loadChatHistory = async () => {
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}chat/history?conversationId=${conversationId}`);
+      const chatHistory = response?.data;
+      if (!chatHistory) {
+        console.log("No chat history found");
+        return;
+      }
+      const chatLogEntries = [];
+      for (let i = 0; i < chatHistory.length; i++) {
+        const entry = chatHistory[i];
+        if (entry.role === "user") {
+          chatLogEntries.push({
+            message: entry.content,
+            response: '',
+            timestamp: new Date().toLocaleTimeString(),
+          });
+        } else {
+          if (chatLogEntries.length > 0 && chatLogEntries[chatLogEntries.length - 1].response === '') {
+            chatLogEntries[chatLogEntries.length - 1].response = entry.content;
+          } else {
+            // This should never happen, but just in case
+            console.log("Warning: response without corresponding message");
+          }
+        }
+      }
+      setChatLog(chatLogEntries);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+    }
+  };
 
   // Handle sending a message to the chat API
   const handleSendMessage = async () => {
@@ -36,7 +76,7 @@ export default function Home() {
 
     try {
       // Send the message to the chat API
-      const response = await axios.post("http://localhost:3001/chat", { message });
+      const response = await axios.post(`${process.env.BACKEND_URL}chat`, { message, conversationId });
 
       // Log the response from the API
       console.log("RESPONSE");
