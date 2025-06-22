@@ -1,5 +1,4 @@
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { SearxngSearch } from "@langchain/community/tools/searxng_search";
 import { WikipediaQueryRun } from "@langchain/community/tools/wikipedia_query_run";
 import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
 import { ToolInterface } from "@langchain/core/tools";
@@ -36,6 +35,8 @@ const modifyMessages = (messages: BaseMessage[]) => {
   Prior to answering, I do recommend looking up current events and information on the internet so that you're up to date on the state of the world on a general level.
   If information provided by the user contradicts information that you know, use the tools to get a better idea of who is correct.
   If you don't think you have the right tools, at least try the web browser tool.
+  What this means is that if you don't believe you can answer a question, try to use the web browser tool to get a better idea of the answer.
+  When using the web browser tool, try to come up with sites appropriate to the question or message and then explore within the sites to get a good answer.
   If you need a url and don't have one, you can try to construct a url for Google search.
   Explore the first 2-3 pages of the search results and their contents to get a good answer.
   To generate a Google search URL for a specific query, you can use the following format: https://www.google.com/search?q=your_search_query.
