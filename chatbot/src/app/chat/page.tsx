@@ -1,31 +1,32 @@
 "use client";
-
 import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 
+// Define the ChatLogEntry interface
 interface ChatLogEntry {
   message: string;
   response: string;
   timestamp: string;
 }
 
+// Define the Home component
 export default function Home() {
+  // State variables
   const [chatLog, setChatLog] = useState<ChatLogEntry[]>([]);
   const [message, setMessage] = useState<string>("");
   const [isSending, setIsSending] = useState(false);
+  const [selectedEndpoint, setSelectedEndpoint] = useState('agent');
+  const [messageSent, setMessageSent] = useState(false);
   const textAreaRef = useRef<HTMLTextAreaElement>(null);
   const conversationId = 'some-conversation-id'; // Replace with the actual conversation ID
 
-  console.log("CHAT LOG!");
-  console.log(chatLog);
-
+  // Load chat history when the component mounts
   useEffect(() => {
     console.log("LOADING CHAT HISTORY");
     //loadChatHistory();
   }, [conversationId]);
 
-  //console.log(process.env)
-
+  // Function to load chat history
   const loadChatHistory = async () => {
     try {
       const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}chat/history?conversationId=${conversationId}`);
@@ -58,7 +59,7 @@ export default function Home() {
     }
   };
 
-  // Handle sending a message to the chat API
+  // Function to handle sending a message
   const handleSendMessage = async () => {
     // Prevent sending messages if the user is already sending a message or if the message is empty
     if (isSending || message.trim() === "") return;
@@ -75,8 +76,8 @@ export default function Home() {
     setMessage("");
 
     try {
-      // Send the message to the chat API
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}agent`, { message, conversationId });
+      // Send the message to the selected endpoint
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}${selectedEndpoint}`, { message, conversationId });
 
       // Log the response from the API
       console.log("RESPONSE");
@@ -119,6 +120,7 @@ export default function Home() {
           clearInterval(intervalId);
           setIsSending(false);
           textAreaRef.current?.focus();
+          setMessageSent(true); // Set messageSent to true
         }
       }, 5);
     } catch (error) {
@@ -139,13 +141,11 @@ export default function Home() {
   // Helper function to render the chat log
   const renderChatLog = (chatLog: ChatLogEntry[]) => {
     return chatLog.map((entry, index) => {
-      const html = renderMarkdownToHTML(entry.response);
-
       return (
         <div key={index} className="flex justify-between items-start mb-4">
           <div className="text-lg">
             <span className="block text-blue-500">You: {entry.message}</span>
-            <span className="block text-gray-600" dangerouslySetInnerHTML={{ __html: html }}></span>
+            <span className="block text-gray-600">{entry.response}</span>
           </div>
           <span className="text-gray-400 text-sm ml-auto">{entry.timestamp}</span>
           {index === chatLog.length - 1 && isSending && (
@@ -177,11 +177,20 @@ export default function Home() {
             disabled={isSending}
             className="w-full h-24 p-4 text-lg border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <div>
+          <div className="flex justify-center mt-4">
+            <select
+              value={selectedEndpoint}
+              onChange={(e) => setSelectedEndpoint(e.target.value)}
+              disabled={messageSent}
+              className={`w-32 h-12 pl-4 pr-10 py-2 mr-4 text-lg text-white bg-gray-950 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4 ${messageSent ? 'cursor-not-allowed' : ''}`}
+            >
+              <option value="agent">Agent</option>
+              <option value="chat">Chat</option>
+            </select>
             <button
               onClick={handleSendMessage}
               disabled={isSending || message.trim() === ""}
-              className="bg-black text-white py-2 px-4 rounded-lg ml-auto flex border border-white hover:bg-gray-700 hover:border-gray-700 cursor-pointer mt-4 ml-auto"
+              className={`bg-black text-white h-12 py-2 px-4 mr-4 rounded-lg hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-gray-300 ${(isSending || message.trim() === "") ? 'cursor-not-allowed' : ''}`}
             >
               Send
             </button>

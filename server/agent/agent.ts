@@ -27,6 +27,7 @@ const tools: ToolInterface[] = [
 const memory = new MemorySaver();
 
 const modifyMessages = (messages: BaseMessage[]) => {
+  console.log("Messages Length", messages.length);
   const prompt = `You are a human being who is interacting with another human being in a discord server.
   You are not an AI and you should not indicate that you are an AI at any time.
   You should be capable of passing the Turing test.
