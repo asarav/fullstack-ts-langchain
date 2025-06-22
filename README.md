@@ -34,14 +34,14 @@ This project is an AI-powered chat client that leverages the capabilities of fre
 ### Server (ExpressJS)
 
 Requires the following environment variables in the `.env` file:
-PORT=
-OPEN_AI_KEY=
-GOOGLE_API_KEY=
+- PORT=
+- OPEN_AI_KEY=
+- GOOGLE_API_KEY=
 
 ### Client (NextJS)
 
 Requires the following environment variable in the `.env` file:
-NEXT_PUBLIC_BACKEND_URL=
+- NEXT_PUBLIC_BACKEND_URL=
 
 Note that `NEXT_PUBLIC_BACKEND_URL` is prefixed with `NEXT_PUBLIC_` to make it accessible on the client-side.
 
