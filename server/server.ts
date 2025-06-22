@@ -7,6 +7,7 @@
 
 import { createServer, config } from './serverConfig';
 import { llmApp } from './chain/workflow';
+import { agent } from './agent/agent';
 import { getChatHistory, saveChatHistory } from './db/chatHistory.service';
 import connectDB from './db/db';
 
@@ -102,6 +103,37 @@ app.get('/chat/history', async (req: any, res: any) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+app.post('/agent', async (req: any, res: any) => {
+  // Get the message from the request body
+  const message = req.body.message;
+
+  // Check if the message is empty
+  if (!message) {
+    // Return a 400 error if the message is empty
+    console.log("No message provided");
+    return res.status(400).json({ error: "No message provided" });
+  }
+
+  try {
+    // Log the incoming message
+    console.log("Message", message);
+    
+    const response = await agent.stream(
+      { messages: [{role: "user", content: message}] },
+      { ...config, streamMode: "updates" }
+    );
+    let responseMessages = [];
+    for await (const step of response) {
+      console.log(step);
+      responseMessages.push(step);
+    }
+    res.json({ messages: responseMessages[responseMessages.length - 1]?.agent?.messages });
+  } catch (error) {
+    console.error("Error during chat:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+})
 
 /**
  * Start the server.

@@ -21,10 +21,10 @@ export default function Home() {
 
   useEffect(() => {
     console.log("LOADING CHAT HISTORY");
-    loadChatHistory();
+    //loadChatHistory();
   }, [conversationId]);
 
-  console.log(process.env)
+  //console.log(process.env)
 
   const loadChatHistory = async () => {
     try {
@@ -76,7 +76,7 @@ export default function Home() {
 
     try {
       // Send the message to the chat API
-      const response = await axios.post(`${process.env.BACKEND_URL}chat`, { message, conversationId });
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}agent`, { message, conversationId });
 
       // Log the response from the API
       console.log("RESPONSE");
