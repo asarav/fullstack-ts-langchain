@@ -89,3 +89,16 @@ npm start
 
 ### Step 6: Access the application
 Open your web browser and navigate to http://localhost:3000 to access the application's UI.
+
+### TODOS:
+- Separation of API calls on the client to its own dedicated api directory so that they can be moved server side potentially
+- Dockerization with docker compose files to build and run the client, server, and mongodb in containers simultaneously with the proper environment values
+- Manifest files for running containers within K8's locally (Windows)
+- Introduction of vector stores for better storage of entities so that agents can build their identity over time and constrain themselves to that identity
+- Adding summarization modules implemented in chain version to the agent version
+- Updating chain prompt to include current date and time.
+- Responsive UI
+- Unit test suite for both server and client?
+- General cleanup, cleaning up type annotations, and refactors
+- Automated linting and prettifying
+- Github runners/pipelines for running linting and unit tests
