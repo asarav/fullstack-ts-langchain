@@ -27,15 +27,16 @@ git clone [https://github.com/your-repo-url.git](https://github.com/asarav/fulls
 ```
 
 ### Step 2: Install dependencies
-Install the dependencies for both the client and server using the following commands:
+Install the dependencies for both the client and server using the following commands starting at the root:
 ```bash
+npm install
 cd client
 npm install
 cd ../server
 npm install
 ```
 
-### Step 3: Create a .env file
+### Step 3: Create .env files
 Create a new file named .env in the root of both the client and server directories.
 Add the required environment variables to the file.
 
@@ -51,6 +52,11 @@ Start the client using the following command:
 ```bash
 cd client
 npm run dev
+```
+
+Note: It is also possible to run both concurrently with one command by running the following at the root of the project:
+```bash
+npm start
 ```
 
 ### Step 6: Access the application
