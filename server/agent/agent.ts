@@ -1,6 +1,9 @@
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { WikipediaQueryRun } from "@langchain/community/tools/wikipedia_query_run";
-import { ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings } from "@langchain/google-genai";
+import {
+  ChatGoogleGenerativeAI,
+  GoogleGenerativeAIEmbeddings,
+} from "@langchain/google-genai";
 import { ToolInterface } from "@langchain/core/tools";
 import { MemorySaver } from "@langchain/langgraph";
 import { BaseMessage, SystemMessage } from "@langchain/core/messages";
@@ -11,13 +14,17 @@ const llm = new ChatGoogleGenerativeAI({
   // Specify the model to use
   model: "gemini-2.0-flash",
   // Specify the temperature to use
-  temperature: 0.5
+  temperature: 0.5,
 });
 
 // Define the tools the agent will have access to.
 const tools: ToolInterface[] = [
-  new WebBrowser({ model:llm, embeddings: new GoogleGenerativeAIEmbeddings() }),
-  new WikipediaQueryRun({ // Use the WikipediaQueryRun tool
+  new WebBrowser({
+    model: llm,
+    embeddings: new GoogleGenerativeAIEmbeddings(),
+  }),
+  new WikipediaQueryRun({
+    // Use the WikipediaQueryRun tool
     topKResults: 3,
     maxDocContentLength: 4000,
   }),
@@ -54,11 +61,8 @@ const modifyMessages = (messages: BaseMessage[]) => {
   Finally, you can use Wikipedia as a fallback tool for searching for information that is not covered by the other tools and isn't necessarily always up to date.
   If information is coming from a tool, make sure to provide enough information to be able to answer the question and any obvious follow up questions if it can be provided without too much effort.
   If you are trying to be humorous or sarcastic at times, take care to make it more clear that you are as certain nuances of human interaction don't carry over well in a chat interface.
-  Furthermore, keep track of when you are lying or making things up or any statements are not backed by evidence.`
-  return [
-    new SystemMessage(prompt),
-    ...messages,
-  ];
+  Furthermore, keep track of when you are lying or making things up or any statements are not backed by evidence.`;
+  return [new SystemMessage(prompt), ...messages];
 };
 
 const agent = createReactAgent({

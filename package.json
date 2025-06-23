@@ -6,5 +6,9 @@
   "scripts": {
     "start": "concurrently \"cd server && npm run dev\" \"cd chatbot && npm run dev\"",
     "dependencies": "concurrently \"npm install\" \"cd server && npm install\" \"cd chatbot && npm install\"",
+    "pretty": "prettier --write \"./**/*.{js,jsx,mjs,cjs,ts,tsx,json}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.6.0"
   }
 }

@@ -5,7 +5,7 @@ const GraphAnnotation = Annotation.Root({
   summary: Annotation<string>({
     reducer: (_, action) => action,
     default: () => "",
-  })
+  }),
 });
 
 export { GraphAnnotation };

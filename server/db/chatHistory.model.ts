@@ -1,4 +1,4 @@
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { Schema } from "mongoose";
 
 const chatHistorySchema = new Schema({
   conversationId: String,
@@ -10,4 +10,4 @@ const chatHistorySchema = new Schema({
   ],
 });
 
-export const ChatHistory = mongoose.model('ChatHistory', chatHistorySchema);
+export const ChatHistory = mongoose.model("ChatHistory", chatHistorySchema);

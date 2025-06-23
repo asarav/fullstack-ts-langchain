@@ -1,5 +1,5 @@
-import { HumanMessage } from '@langchain/core/messages';
-import { ChatHistory } from './chatHistory.model';
+import { HumanMessage } from "@langchain/core/messages";
+import { ChatHistory } from "./chatHistory.model";
 
 const saveChatHistory = async (conversationId: string, messages: any[]) => {
   try {
@@ -16,10 +16,10 @@ const saveChatHistory = async (conversationId: string, messages: any[]) => {
     await ChatHistory.updateOne(
       { conversationId },
       { $set: { messages: messagesWithRoles } },
-      { upsert: true }
+      { upsert: true },
     );
   } catch (error) {
-    console.error('Error saving chat history:', error);
+    console.error("Error saving chat history:", error);
   }
 };
 

@@ -1,6 +1,6 @@
 /**
  * Model caller.
- * 
+ *
  * This file defines a function that calls the language model to generate a response.
  * It uses the `ChatGoogleGenerativeAI` class from `@langchain/google-genai` to interact with the model.
  */
@@ -12,7 +12,7 @@ import { trimMessages } from "@langchain/core/messages";
 
 /**
  * Create a new language model instance.
- * 
+ *
  * This function creates a new instance of the `ChatGoogleGenerativeAI` class,
  * which is used to interact with the language model.
  */
@@ -20,12 +20,12 @@ const llm = new ChatGoogleGenerativeAI({
   // Specify the model to use
   model: "gemini-2.0-flash",
   // Specify the temperature to use
-  temperature: 0.5
+  temperature: 0.5,
 });
 
 /**
  * Create a message trimmer.
- * 
+ *
  * This function creates a new instance of the `trimMessages` class,
  * which is used to trim the conversation history.
  */
@@ -46,7 +46,7 @@ const trimmer = trimMessages({
 
 /**
  * Call the language model.
- * 
+ *
  * This function calls the language model to generate a response to the given input.
  * It uses the `promptTemplate` to generate a prompt for the model, and then invokes the model with the prompt.
  */
