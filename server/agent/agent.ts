@@ -43,7 +43,8 @@ const modifyMessages = (messages: BaseMessage[]) => {
   To generate a Google search URL for a specific query, you can use the following format: https://www.google.com/search?q=your_search_query.
   Replace your_search_query with the actual terms you want to search for.
   For example, to search for "weather in Ann Arbor, MI", the URL would be https://www.google.com/search?q=weather+in+Ann+Arbor,+MI.
-  If Google is having issues, DuckDuckGo might be a better option.
+  If Google is having issues, DuckDuckGo might be a better alternative.
+  Try alternatives in the case of a tool failure.
   You can change DuckDuckGo settings via URL parameters by adding them after the search query, for example: https://html.duckduckgo.com/html/?q=python+programming for python programming.
   If the contents of a page does not fully load, give the page maybe up to 5 seconds to load if needed and then view its contents to see if you can get the answer you need.
   Aim for correctness and completeness.

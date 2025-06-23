@@ -1,7 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import axios from "axios";
-
+import { generateChatResponse, generateAgentResponse, fetchChatHistory } from "./api/api";
 // Define the ChatLogEntry interface
 interface ChatLogEntry {
   message: string;
@@ -29,7 +28,7 @@ export default function Home() {
   // Function to load chat history
   const loadChatHistory = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}chat/history?conversationId=${conversationId}`);
+      const response = await fetchChatHistory(conversationId);
       const chatHistory = response?.data;
       if (!chatHistory) {
         console.log("No chat history found");
@@ -77,11 +76,18 @@ export default function Home() {
 
     try {
       // Send the message to the selected endpoint
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}${selectedEndpoint}`, { message, conversationId });
+      const req = {
+        body: {
+          message,
+          conversationId,
+        },
+      };
+
+      const response = await (selectedEndpoint === 'agent' ? generateAgentResponse : generateChatResponse)(req);
 
       // Log the response from the API
       console.log("RESPONSE");
-      console.log(response.data);
+      console.log(response?.data);
 
       // Get the response text from the API
       console.log(response);

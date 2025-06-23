@@ -4,6 +4,7 @@
     "create-next-app": "^15.3.3"
   },
   "scripts": {
-    "start": "concurrently \"cd server && npm run dev\" \"cd chatbot && npm run dev\""
+    "start": "concurrently \"cd server && npm run dev\" \"cd chatbot && npm run dev\"",
+    "dependencies": "concurrently \"npm install\" \"cd server && npm install\" \"cd chatbot && npm install\"",
   }
 }
