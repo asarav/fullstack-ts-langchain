@@ -1,13 +1,22 @@
 import { HumanMessage } from "@langchain/core/messages";
-import { GraphAnnotation } from "./graphAnnotation";
+import { GraphAnnotation } from "../chain/graphAnnotation";
 import { v4 as uuidv4 } from "uuid";
-import { llm } from "./callModel";
+import { llm } from "../chain/callModel";
 
 const summarizeConversation = async (
   state: typeof GraphAnnotation.State,
 ): Promise<Partial<typeof GraphAnnotation.State>> => {
   // First, we summarize the conversation
   const { summary, messages } = state;
+  const response = await summarizeHelper(summary, messages, llm);
+  return { summary: response.content, messages: messages };
+};
+
+const summarizeHelper = async (
+  summary: string | undefined,
+  messages: any[],
+  llm: any,
+): Promise<any> => {
   let summaryMessage: string;
   if (summary) {
     // If a summary already exists, we use a different system prompt
@@ -31,7 +40,7 @@ const summarizeConversation = async (
     throw new Error("Expected a string response from the model");
   }
 
-  return { summary: response.content, messages: messages };
+  return response;
 };
 
-export { summarizeConversation };
+export { summarizeConversation, summarizeHelper };

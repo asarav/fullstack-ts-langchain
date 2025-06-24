@@ -1,7 +1,7 @@
 import { StateGraph, MemorySaver, START, END } from "@langchain/langgraph";
 import { GraphAnnotation } from "./graphAnnotation";
 import { callModel } from "./callModel";
-import { summarizeConversation } from "./summarizer";
+import { summarizeConversation } from "../utils/summarizer";
 
 // Define a new graph
 const workflow = new StateGraph(GraphAnnotation)
