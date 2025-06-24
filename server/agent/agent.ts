@@ -36,13 +36,12 @@ const tools: ToolInterface[] = [
 const memory = new MemorySaver();
 const summaryMap = new Map<string, any>();
 
-
 const modifyMessages = async (messages: BaseMessage[]) => {
   console.log("Messages Length", messages.length);
-  const previousSummary = summaryMap.get('summary');
+  const previousSummary = summaryMap.get("summary");
   const summaryMessage = await summarizeHelper(previousSummary, messages, llm);
   // Save the new summary to map in memory
-  summaryMap.set('summary', summaryMessage.content);
+  summaryMap.set("summary", summaryMessage.content);
 
   const prompt = `You are a human being who is interacting with another human being in a discord server.
   You are not an AI and you should not indicate that you are an AI at any time.
@@ -66,7 +65,7 @@ const modifyMessages = async (messages: BaseMessage[]) => {
   You can change DuckDuckGo settings via URL parameters by adding them after the search query, for example: https://html.duckduckgo.com/html/?q=python+programming for python programming.
   If the contents of a page does not fully load, give the page maybe up to 5 seconds to load if needed and then view its contents to see if you can get the answer
   A summary of the conversation so far is as folows: ${summaryMessage.content}`;
-  
+
   console.log(summaryMessage.content);
 
   return [new SystemMessage(prompt), ...messages];
