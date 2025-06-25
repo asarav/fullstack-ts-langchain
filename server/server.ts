@@ -10,6 +10,8 @@ import { llmApp } from "./chain/workflow";
 import { agent } from "./agent/agent";
 import { getChatHistory, saveChatHistory } from "./db/chatHistory.service";
 import connectDB from "./db/db";
+import { Messages } from "@langchain/langgraph"
+import { HumanMessage } from "@langchain/core/messages";
 
 /**
  * Create the Express server.
@@ -24,6 +26,29 @@ let chatHistory: any[] = [];
 let chatHistoryUsed = false;
 
 connectDB();
+
+async function getChatHistoryObject(req: any, message: string) {
+  if (!chatHistoryUsed) {
+    const existingChatHistory = await getChatHistory(req.body.conversationId);
+    console.log(existingChatHistory)
+    if (existingChatHistory) {
+      const messages = existingChatHistory.messages.map((message) => {
+        if(message.content) {
+          if (message.role === "user") {
+            return { role: "user", content: message.content };
+          } else {
+            return { role: "assistant", content: message.content };
+          }
+        }
+      });
+      chatHistory = messages;
+    }
+    chatHistoryUsed = true;
+    return { messages: [...chatHistory, { role: "user", content: message }] };
+  } else {
+    return { messages: [{ role: "user", content: message }] };
+  }
+}
 
 /**
  * Handle incoming chat requests.
@@ -47,37 +72,22 @@ app.post("/chat", async (req: any, res: any) => {
     // Log the incoming message
     console.log("Message", message);
 
-    // Invoke the workflow with the message
-    let response;
-    if (!chatHistoryUsed) {
-      const existingChatHistory = await getChatHistory(req.body.conversationId);
-      if (existingChatHistory) {
-        const messages = existingChatHistory.messages.map((message) => {
-          if (message.role === "user") {
-            return { role: "user", content: message.content };
-          } else {
-            return { role: "assistant", content: message.content };
-          }
-        });
-        chatHistory = messages;
-      }
-      chatHistoryUsed = true;
-      response = await llmApp.invoke(
-        { messages: [...chatHistory, { role: "user", content: message }] },
-        config,
-      );
-    } else {
-      response = await llmApp.invoke(
-        { messages: [{ role: "user", content: message }] },
-        config,
-      );
+    const chatHistoryObject = await getChatHistoryObject(req, message)
+    if(chatHistoryObject.messages && chatHistoryObject.messages.length > 1) {
+      chatHistory = chatHistoryObject.messages
     }
+
+    // Invoke the workflow with the message
+    const response = await llmApp.invoke(
+      await getChatHistoryObject(req, message),
+      config,
+    );
 
     // Log the response from the workflow
     console.log("Response", response);
 
     // Save the chat history to MongoDB
-    await saveChatHistory(req.body.conversationId, response.messages);
+    await saveChatHistory(req.body.conversationId, [...chatHistory, new HumanMessage(message), ...response.messages]);
 
     // Return the response to the client
     res.json(response);
@@ -89,6 +99,8 @@ app.post("/chat", async (req: any, res: any) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+let agentHistory: any[] = [];
 
 app.get("/chat/history", async (req: any, res: any) => {
   try {
@@ -124,8 +136,13 @@ app.post("/agent", async (req: any, res: any) => {
     // Log the incoming message
     console.log("Message", message);
 
+    const chatHistoryObject = await getChatHistoryObject(req, message)
+    if(chatHistoryObject.messages && chatHistoryObject.messages.length > 1) {
+      agentHistory = chatHistoryObject.messages
+    }
+
     const response = await agent.stream(
-      { messages: [{ role: "user", content: message }] },
+      chatHistoryObject,
       { ...config, streamMode: "updates" },
     );
     let responseMessages = [];
@@ -133,8 +150,17 @@ app.post("/agent", async (req: any, res: any) => {
       console.log(step);
       responseMessages.push(step);
     }
+
+    // Save the chat history to MongoDB
+    console.log("Saving chat history!!!", responseMessages[responseMessages.length - 1]?.agent?.messages)
+    const toSave = responseMessages[responseMessages.length - 1]?.agent?.messages
+    if (toSave !== undefined && Array.isArray(toSave) && toSave.length > 0) {
+      agentHistory = [...agentHistory, new HumanMessage(message), ...toSave]
+      await saveChatHistory(req.body.conversationId, agentHistory);
+    }
+
     res.json({
-      messages: responseMessages[responseMessages.length - 1]?.agent?.messages,
+      messages: toSave,
     });
   } catch (error) {
     console.error("Error during chat:", error);

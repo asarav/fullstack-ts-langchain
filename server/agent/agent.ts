@@ -10,7 +10,7 @@ import { BaseMessage, SystemMessage } from "@langchain/core/messages";
 import { Calculator } from "@langchain/community/tools/calculator";
 import { WebBrowser } from "langchain/tools/webbrowser";
 import { summarizeHelper } from "../utils/summarizer";
-import { prev } from "cheerio/dist/commonjs/api/traversing";
+import trimmer from "../utils/trimmer";
 
 const llm = new ChatGoogleGenerativeAI({
   // Specify the model to use
@@ -68,7 +68,9 @@ const modifyMessages = async (messages: BaseMessage[]) => {
 
   console.log(summaryMessage.content);
 
-  return [new SystemMessage(prompt), ...messages];
+  const newMessages = [new SystemMessage(prompt), ...messages];
+
+  return await trimmer.invoke(newMessages);
 };
 
 const agent = createReactAgent({

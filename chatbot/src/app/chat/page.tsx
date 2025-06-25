@@ -26,7 +26,7 @@ export default function Home() {
   // Load chat history when the component mounts
   useEffect(() => {
     console.log("LOADING CHAT HISTORY");
-    //loadChatHistory();
+    loadChatHistory();
   }, [conversationId]);
 
   // Function to load chat history
