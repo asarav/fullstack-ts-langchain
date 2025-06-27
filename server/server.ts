@@ -10,7 +10,6 @@ import { llmApp } from "./chain/workflow";
 import { agent } from "./agent/agent";
 import { getChatHistory, saveChatHistory } from "./db/chatHistory.service";
 import connectDB from "./db/db";
-import { Messages } from "@langchain/langgraph"
 import { HumanMessage } from "@langchain/core/messages";
 
 /**
@@ -24,16 +23,17 @@ const app = createServer();
 //Global variables to store chat history and retrieve it
 let chatHistory: any[] = [];
 let chatHistoryUsed = false;
+let agentHistory: any[] = [];
 
 connectDB();
 
 async function getChatHistoryObject(req: any, message: string) {
   if (!chatHistoryUsed) {
     const existingChatHistory = await getChatHistory(req.body.conversationId);
-    console.log(existingChatHistory)
     if (existingChatHistory) {
       const messages = existingChatHistory.messages.map((message) => {
-        if(message.content) {
+        if (message.content) {
+          console.log(message);
           if (message.role === "user") {
             return { role: "user", content: message.content };
           } else {
@@ -44,9 +44,9 @@ async function getChatHistoryObject(req: any, message: string) {
       chatHistory = messages;
     }
     chatHistoryUsed = true;
-    return { messages: [...chatHistory, { role: "user", content: message }] };
+    return { messages: [...chatHistory, new HumanMessage(message)] };
   } else {
-    return { messages: [{ role: "user", content: message }] };
+    return { messages: [new HumanMessage(message)] };
   }
 }
 
@@ -72,10 +72,11 @@ app.post("/chat", async (req: any, res: any) => {
     // Log the incoming message
     console.log("Message", message);
 
-    const chatHistoryObject = await getChatHistoryObject(req, message)
-    if(chatHistoryObject.messages && chatHistoryObject.messages.length > 1) {
-      chatHistory = chatHistoryObject.messages
+    const chatHistoryObject = await getChatHistoryObject(req, message);
+    if (chatHistoryObject.messages && chatHistoryObject.messages.length > 1) {
+      agentHistory = chatHistoryObject.messages;
     }
+    console.log(agentHistory);
 
     // Invoke the workflow with the message
     const response = await llmApp.invoke(
@@ -87,7 +88,8 @@ app.post("/chat", async (req: any, res: any) => {
     console.log("Response", response);
 
     // Save the chat history to MongoDB
-    await saveChatHistory(req.body.conversationId, [...chatHistory, new HumanMessage(message), ...response.messages]);
+    agentHistory = [...agentHistory, ...response.messages];
+    await saveChatHistory(req.body.conversationId, [...agentHistory]);
 
     // Return the response to the client
     res.json(response);
@@ -100,8 +102,6 @@ app.post("/chat", async (req: any, res: any) => {
   }
 });
 
-let agentHistory: any[] = [];
-
 app.get("/chat/history", async (req: any, res: any) => {
   try {
     // Get the conversation ID from the request query
@@ -112,9 +112,9 @@ app.get("/chat/history", async (req: any, res: any) => {
       return res.status(400).json({ error: "Conversation ID is required" });
     }
 
-    const chatHistory = await getChatHistory(conversationId);
+    const response = await getChatHistory(conversationId);
 
-    res.json(chatHistory?.messages);
+    res.json(response?.messages);
   } catch (error) {
     console.error("Error loading chat history:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -136,15 +136,15 @@ app.post("/agent", async (req: any, res: any) => {
     // Log the incoming message
     console.log("Message", message);
 
-    const chatHistoryObject = await getChatHistoryObject(req, message)
-    if(chatHistoryObject.messages && chatHistoryObject.messages.length > 1) {
-      agentHistory = chatHistoryObject.messages
+    const chatHistoryObject = await getChatHistoryObject(req, message);
+    if (chatHistoryObject.messages && chatHistoryObject.messages.length > 1) {
+      agentHistory = chatHistoryObject.messages;
     }
 
-    const response = await agent.stream(
-      chatHistoryObject,
-      { ...config, streamMode: "updates" },
-    );
+    const response = await agent.stream(chatHistoryObject, {
+      ...config,
+      streamMode: "updates",
+    });
     let responseMessages = [];
     for await (const step of response) {
       console.log(step);
@@ -152,10 +152,10 @@ app.post("/agent", async (req: any, res: any) => {
     }
 
     // Save the chat history to MongoDB
-    console.log("Saving chat history!!!", responseMessages[responseMessages.length - 1]?.agent?.messages)
-    const toSave = responseMessages[responseMessages.length - 1]?.agent?.messages
+    const toSave =
+      responseMessages[responseMessages.length - 1]?.agent?.messages;
     if (toSave !== undefined && Array.isArray(toSave) && toSave.length > 0) {
-      agentHistory = [...agentHistory, new HumanMessage(message), ...toSave]
+      agentHistory = [...agentHistory, new HumanMessage(message), ...toSave];
       await saveChatHistory(req.body.conversationId, agentHistory);
     }
 
