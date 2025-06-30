@@ -5,6 +5,8 @@ import {
   generateAgentResponse,
   fetchChatHistory,
 } from "./api/api";
+import ReactMarkdown from 'react-markdown';
+
 // Define the ChatLogEntry interface
 interface ChatLogEntry {
   message: string;
@@ -152,25 +154,6 @@ export default function Home() {
     }
   };
 
-  const renderMarkdownToHTML = (value: string) => {
-    return value
-      .replace(
-        /^(#+) (.*)$/gm,
-        (match, p1, p2) => `<h${p1.length}>${p2}</h${p1.length}>`,
-      )
-      .replace(/^(.*)$/gm, (match) => `<p>${match}</p>`)
-      .replace(
-        /!\[(.*?)\]\((.*?)\)/g,
-        (match, p1, p2) => `<img src="${p2}" alt="${p1}">`,
-      )
-      .replace(
-        /\[(.*?)\]\((.*?)\)/g,
-        (match, p1, p2) => `<a href="${p2}">${p1}</a>`,
-      )
-      .replace(/_(.*?)_/g, (match, p1) => `<em>${p1}</em>`)
-      .replace(/\*(.*?)\*/g, (match, p1) => `<strong>${p1}</strong>`);
-  };
-
   // Helper function to render the chat log
   const renderChatLog = (chatLog: ChatLogEntry[]) => {
     return chatLog.map((entry, index) => {
@@ -178,7 +161,7 @@ export default function Home() {
         <div key={index} className="flex justify-between items-start mb-4">
           <div className="text-lg">
             <span className="block text-blue-500">You: {entry.message}</span>
-            <span className="block text-gray-600">{entry.response}</span>
+            <span className="block text-gray-600"><ReactMarkdown>{entry.response}</ReactMarkdown></span>
           </div>
           <span className="text-gray-400 text-sm ml-auto">
             {entry.timestamp}
