@@ -5,7 +5,7 @@ import {
   generateAgentResponse,
   fetchChatHistory,
 } from "./api/api";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 
 // Define the ChatLogEntry interface
 interface ChatLogEntry {
@@ -161,7 +161,9 @@ export default function Home() {
         <div key={index} className="flex justify-between items-start mb-4">
           <div className="text-lg">
             <span className="block text-blue-500">You: {entry.message}</span>
-            <span className="block text-gray-600"><ReactMarkdown>{entry.response}</ReactMarkdown></span>
+            <span className="block text-gray-600">
+              <ReactMarkdown>{entry.response}</ReactMarkdown>
+            </span>
           </div>
           <span className="text-gray-400 text-sm ml-auto">
             {entry.timestamp}

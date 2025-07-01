@@ -91,7 +91,6 @@ npm start
 Open your web browser and navigate to http://localhost:3000 to access the application's UI.
 
 ### TODOS:
-- Dockerization with docker compose files to build and run the client, server, and mongodb in containers simultaneously with the proper environment values
 - Manifest files for running containers within K8's locally (Windows)
 - Introduction of vector stores for better storage of entities so that agents can build their identity over time and constrain themselves to that identity
 - Updating chain prompt to include current date and time.
@@ -100,3 +99,8 @@ Open your web browser and navigate to http://localhost:3000 to access the applic
 - General cleanup, cleaning up type annotations, and refactors
 - Automated linting and prettifying
 - Github runners/pipelines for running linting and unit tests
+
+To run on docker use the docker compose.
+```bash
+docker compose --env-file ./server/.env --env-file ./chatbot/.env up
+```

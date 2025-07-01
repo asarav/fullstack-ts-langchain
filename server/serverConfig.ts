@@ -9,7 +9,7 @@ dotenv.config();
 
 // Set the port number for the server to listen on
 // If PORT environment variable is not set, default to 3001
-const port = process.env.PORT || 3001;
+const port = process.env.EXPRESS_PORT || 3001;
 
 // Define a function to create an Express server instance
 const createServer = () => {
