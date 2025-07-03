@@ -250,6 +250,23 @@ This script will:
 
 > **Tip:** Open PowerShell as Administrator for best results.
 
+### Cleanup Script
+
+To completely clean up all Kubernetes resources and stop Minikube:
+
+```powershell
+.\cleanup-k8s.ps1
+```
+
+This script will:
+- Delete all resources from the chatbot-app namespace
+- Remove ConfigMaps and Secrets
+- Delete PersistentVolumeClaims
+- Remove the entire namespace
+- Stop and delete the Minikube cluster
+
+> **Note:** This will permanently delete all data and configurations. Use this when you want to start completely fresh.
+
 ## Troubleshooting
 
 - **Minikube fails to start:**  
