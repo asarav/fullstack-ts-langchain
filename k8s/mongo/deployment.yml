@@ -1,0 +1,39 @@
+# This file defines the MongoDB deployment and persistent storage for Kubernetes/Minikube
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo # The name of the deployment
+spec:
+  selector:
+    matchLabels:
+      app: mongo # Label to match pods managed by this deployment
+  replicas: 1 # Only one MongoDB pod for local development
+  template:
+    metadata:
+      labels:
+        app: mongo # Label for the pod
+    spec:
+      containers:
+        - name: mongo
+          image: mongo:6.0 # Official MongoDB image from Docker Hub
+          ports:
+            - containerPort: 27017 # Default MongoDB port
+          volumeMounts:
+            - name: mongo-persistent-storage
+              mountPath: /data/db # Where MongoDB stores its data
+      volumes:
+        - name: mongo-persistent-storage
+          persistentVolumeClaim:
+            claimName: mongo-pvc # Reference to the PVC below
+---
+# This PersistentVolumeClaim reserves disk space for MongoDB data
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # Only one node can mount the volume for writing
+  resources:
+    requests:
+      storage: 1Gi # 1GB of storage for MongoDB data

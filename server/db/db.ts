@@ -2,13 +2,13 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 
 dotenv.config();
-console.log(`${process.env.MONGODB_URI}${process.env.MONGODB_PORT}/${process.env.MONGODB_COLLECTION}`)
+
+const uri = `${process.env.MONGODB_URI}:${process.env.MONGODB_PORT}/${process.env.MONGODB_COLLECTION}`;
+console.log(uri);
 
 const connectDB = async () => {
   try {
-    await mongoose.connect(
-      `${process.env.MONGODB_URI}${process.env.MONGODB_PORT}/${process.env.MONGODB_COLLECTION}`,
-    );
+    await mongoose.connect(uri);
     console.log("MongoDB Connected...");
   } catch (err: any) {
     console.error(err.message);

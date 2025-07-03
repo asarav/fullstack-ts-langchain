@@ -1,0 +1,29 @@
+# This file shows how to add resource limits to your deployments
+# Copy these sections into your deployment.yml files under the container spec
+
+# Example for server deployment:
+# resources:
+#   requests:
+#     memory: "256Mi"
+#     cpu: "250m"
+#   limits:
+#     memory: "512Mi"
+#     cpu: "500m"
+
+# Example for chatbot deployment:
+# resources:
+#   requests:
+#     memory: "128Mi"
+#     cpu: "100m"
+#   limits:
+#     memory: "256Mi"
+#     cpu: "200m"
+
+# Example for mongo deployment:
+# resources:
+#   requests:
+#     memory: "512Mi"
+#     cpu: "250m"
+#   limits:
+#     memory: "1Gi"
+#     cpu: "500m" 

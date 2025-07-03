@@ -1,0 +1,12 @@
+# This file exposes the Express backend as a service inside the Kubernetes cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: server # The name of the service
+spec:
+  selector:
+    app: server # Connects the service to pods with this label
+  ports:
+    - protocol: TCP
+      port: 3001 # Port the service exposes inside the cluster
+      targetPort: 3001 # Port the Express server container listens on

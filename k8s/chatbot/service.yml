@@ -1,0 +1,14 @@
+# This file exposes the Next.js frontend as a NodePort service so you can access it from your browser
+apiVersion: v1
+kind: Service
+metadata:
+  name: chatbot # The name of the service
+spec:
+  type: NodePort # Exposes the service on a port on each node
+  selector:
+    app: chatbot # Connects the service to pods with this label
+  ports:
+    - protocol: TCP
+      port: 3000 # Port the service exposes inside the cluster
+      targetPort: 3000 # Port the Next.js container listens on
+      nodePort: 32000 # Port on your host machine (Minikube VM) to access the app

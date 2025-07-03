@@ -3,7 +3,7 @@ import { ChatRequest } from "@/app/lib/definitions";
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+  baseURL: "/api", // Using Next.js proxy to backend service
 });
 
 export const generateChatResponse = async (req: ChatRequest) => {

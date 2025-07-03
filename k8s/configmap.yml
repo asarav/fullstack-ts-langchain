@@ -1,0 +1,14 @@
+# This file stores non-sensitive configuration data for the application
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chatbot-config
+  namespace: chatbot-app
+data:
+  # Database configuration
+  MONGODB_URI: "mongodb://mongo"
+  MONGODB_PORT: "27017"
+  MONGODB_COLLECTION: "chatbot-db"
+  
+  # Server configuration
+  PORT: "3001" 

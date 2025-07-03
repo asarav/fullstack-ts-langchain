@@ -1,0 +1,12 @@
+# This file exposes MongoDB as a service inside the Kubernetes cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo # The name of the service
+spec:
+  selector:
+    app: mongo # Connects the service to pods with this label
+  ports:
+    - protocol: TCP
+      port: 27017 # Port the service exposes inside the cluster
+      targetPort: 27017 # Port the MongoDB container listens on

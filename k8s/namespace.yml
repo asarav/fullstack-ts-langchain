@@ -1,0 +1,5 @@
+# This file defines a namespace to isolate all chatbot-related resources in Kubernetes/Minikube
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chatbot-app # The name of the namespace for this project

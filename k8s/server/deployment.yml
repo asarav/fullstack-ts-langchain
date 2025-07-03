@@ -1,0 +1,52 @@
+# This file defines the Express backend deployment for Kubernetes/Minikube
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server # The name of the deployment
+spec:
+  replicas: 1 # Only one backend pod for local development
+  selector:
+    matchLabels:
+      app: server # Label to match pods managed by this deployment
+  template:
+    metadata:
+      labels:
+        app: server # Label for the pod
+    spec:
+      containers:
+        - name: server
+          image: server:latest # Use the locally built Docker image
+          imagePullPolicy: Never # Don't try to pull from a registry; use local image
+          ports:
+            - containerPort: 3001 # Port the Express server listens on
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: chatbot-config
+                  key: PORT
+            - name: MONGODB_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: chatbot-config
+                  key: MONGODB_URI
+            - name: MONGODB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: chatbot-config
+                  key: MONGODB_PORT
+            - name: MONGODB_COLLECTION
+              valueFrom:
+                configMapKeyRef:
+                  name: chatbot-config
+                  key: MONGODB_COLLECTION
+            - name: OPEN_AI_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: OPEN_AI_KEY
+            - name: GOOGLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: chatbot-secrets
+                  key: GOOGLE_API_KEY
